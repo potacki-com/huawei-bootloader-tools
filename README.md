@@ -142,6 +142,30 @@ It takes a lot of time as the script attempts to bruteforce the code (= attempts
 all your data will be **ERASED**. Sometimes the device may prompt you before unlocking the phone,
 however make sure to back up your data regardless.
 
+### Lock bootloader
+
+You can run this script by using this command:
+
+```shell
+$ node lock-bootloader.mjs <oem_code>
+```
+
+This takes usually just few seconds. After that, your device will reboot.
+
+### Download Platform tools
+
+You can run this script by using this command:
+
+```shell
+$ node download-platform-tools.js
+```
+
+The platform tools are downloaded into the bin/{os}/platform-tools folder.
+
+# Credits
+
+[SkyEmie/huawei-honor-unlock-bootloader](https://github.com/SkyEmie/huawei-honor-unlock-bootloader) - The original Python script from which this project has been forked and rewritten.
+
 <br>
 <hr>
 
