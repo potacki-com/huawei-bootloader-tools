@@ -1,11 +1,36 @@
+# Disclaimer
+
+Everything you do with these scripts you do at your own risk. Me nor the contributors are responsible
+for any damage that may occur. Please go away if you don't know what you're doing.
+
 # Huawei Bootloader Tools
 
 This repository contains a set of scripts that can help you (un)lock the bootloader.
 
-## Disclaimer
+### Success rate
 
-Everything you do with these scripts you do at your own risk. Me nor the contributors are responsible
-for any damage that may occur. Please go away if you don't know what you're doing.
+The success rate depends on the region where you bought the device. You will have most luck with devices
+bought in Europe, as they only contain numbers in their bootloader unlock code. You can try with other regions
+as well, but you have way smaller chance of succeeding.
+
+### Tested devices
+
+- Huawei P20 lite (ANE-LX1)
+  - State: In progress
+  - Started at: March 27th 2022, 17:04
+  - Notes:
+    - requires `autorebootAfter` to be set to `4`
+
+Other devices which have been tested with the original Python script:
+
+(see: [SkyEmie/huawei-honor-unlock-bootloader#summary](https://github.com/SkyEmie/huawei-honor-unlock-bootloader#summary))
+
+- Honor 5x, 8x, 9x
+- Honor view 10 and 20
+- Honor 10 lite
+- Huawei P20 lite
+- Huawei Y6 2019
+- Huawei P30
 
 ## Requirements
 
@@ -90,18 +115,34 @@ chmod +x bin/{distro - win32/linux/darwin}/platform-tools/adb
 chmod +x bin/{distro - win32/linux/darwin}/platform-tools/fastboot
 ```
 
+### Enabling USB debugging
+
+First, you need to go to Settings > Developer options (not enable by default, to enable,
+go to `About phone` and tap the `Build number` field 7 times, then go back and it should appear)
+and enable `USB Debugging` and `OEM unlocking`. Then, connect your device to the computer
+(if it's not already) and it will ask you to allow usb/adb debugging. Allow it and make sure
+to check `Always allow from this computer`.
+
 ## Running the scripts
 
-Please make sure that the device is connected already. It doesn't matter whether it's in fastboot mode
-or not.
+Please make sure that the device is connected already. It doesn't matter
+whether if it's in fastboot/bootloader mode or not.
 
 ### Unlock bootloader
 
-````
-node unlock-bootloader.mjs
-```
-````
+You can run this script by using this command:
 
+```shell
+$ node unlock-bootloader.mjs
+```
+
+It takes a lot of time as the script attempts to bruteforce the code (= attempts lots of combinations). This will take ~~hours~~ days, depends purely on your luck.
+
+**Warning:** When the correct code is found, the phone is instantly unlocked, which means that
+all your data will be **ERASED**. Sometimes the device may prompt you before unlocking the phone,
+however make sure to back up your data regardless.
+
+<br>
 <hr>
 
 2022 &copy; Mia Lilian Morningstar &ndash; Available under the MIT license, see [LICENSE](LICENSE).

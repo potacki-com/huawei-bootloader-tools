@@ -27,29 +27,30 @@
  * SOFTWARE.
  */
 
-import path from "path";
-import { fileURLToPath } from "url";
-import { platform, win } from "./_platform.mjs";
+export class CommandInvalidException extends Error {
+  constructor() {
+    super();
+    this.name = "CommandInvalidException";
+  }
+}
 
-const __filename = fileURLToPath(import.meta.url);
+export class UnknownOutputException extends Error {
+  constructor() {
+    super();
+    this.name = "UnknownOutputException";
+  }
+}
 
-export const __root = path.join(path.dirname(__filename), "..");
+export class CodeNotFoundException extends Error {
+  constructor() {
+    super();
+    this.name = "CodeNotFoundException";
+  }
+}
 
-export const bin = path.join(__root, "bin");
-
-export const adb = path.join(__root, "bin", platform, "platform-tools", win ? "adb.exe" : "adb");
-
-export const fastboot = path.join(
-  __root,
-  "bin",
-  platform,
-  "platform-tools",
-  win ? "fastboot.exe" : "fastboot"
-);
-
-export const adbMessages = {
-  oemUnlockSuccess: "success",
-  oemUnlockReboot: "reboot",
-  oemUnlockFail: "check password failed",
-  commandInvalid: "command invalid",
-};
+export class InvalidImeiException extends Error {
+  constructor() {
+    super();
+    this.name = "InvalidImeiException";
+  }
+}

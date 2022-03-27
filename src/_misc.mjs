@@ -27,34 +27,29 @@
  * SOFTWARE.
  */
 
-import { Bruteforce } from "./src/Bruteforce.mjs";
-import { wait, skipWarning } from "./src/_misc.mjs";
+import { readFileSync } from "fs";
+import path from "path";
+import { __root } from "./_const.mjs";
 
-const run = async () => {
-  if (!skipWarning) {
-    console.log(
-      [
-        "",
-        "This script unlocks your device's bootloader which can be used for rooting,",
-        "flashing custom ROMs, etc.",
-        "",
-        "Authors of this script are not responsible for any kind of damage that may occur",
-        "by using this script - run at your own risk.",
-        "",
-        "Only connect one device at a time, otherwise this script will not work properly.",
-        "",
-        "This script will start in 10 seconds - if you don't want to continue, press Ctrl+C.",
-        "",
-      ].join("\n")
-    );
+export const wait = (num) => new Promise((res) => setTimeout(() => res(), num));
 
-    await wait(10000);
-  }
+export const rawArgs = process.argv.slice(2);
 
-  console.log("Unlock Bootloader - github.com/VottusCode/huawei-honor-bootloader-bruteforce\n");
+export const args = rawArgs.filter((arg) => !arg.startsWith("--"));
 
-  const bruteforce = new Bruteforce();
-  await bruteforce.start();
-};
+export const params = rawArgs
+  .filter((arg) => arg.startsWith("--"))
+  .map((param) => param.substring("--".length, param.length));
 
-run();
+export const verbose = params.includes("verbose");
+
+export const skipWarning = params.includes("skip-warning");
+
+export const {
+  imei,
+  autorebootAfter = 4,
+  throwOnUnknownErrors = false,
+  saveStateAfter = 200,
+} = JSON.parse(readFileSync(path.join(__root, "config.json"), "utf-8"));
+
+export const verboseLog = (...args) => verbose && console.log(...args);

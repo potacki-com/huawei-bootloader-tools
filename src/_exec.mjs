@@ -27,34 +27,47 @@
  * SOFTWARE.
  */
 
-import { Bruteforce } from "./src/Bruteforce.mjs";
-import { wait, skipWarning } from "./src/_misc.mjs";
+import { exec as _exec } from "child_process";
 
-const run = async () => {
-  if (!skipWarning) {
-    console.log(
-      [
-        "",
-        "This script unlocks your device's bootloader which can be used for rooting,",
-        "flashing custom ROMs, etc.",
-        "",
-        "Authors of this script are not responsible for any kind of damage that may occur",
-        "by using this script - run at your own risk.",
-        "",
-        "Only connect one device at a time, otherwise this script will not work properly.",
-        "",
-        "This script will start in 10 seconds - if you don't want to continue, press Ctrl+C.",
-        "",
-      ].join("\n")
-    );
+export const execStream = (cmd) => {
+  const stream = _exec(cmd);
+  if (!stream.stdout) throw new Error("There's no stdout.");
 
-    await wait(10000);
-  }
-
-  console.log("Unlock Bootloader - github.com/VottusCode/huawei-honor-bootloader-bruteforce\n");
-
-  const bruteforce = new Bruteforce();
-  await bruteforce.start();
+  return stream;
 };
 
-run();
+export const exec = (cmd, pipeStdout = null) =>
+  new Promise((resolve, reject) => {
+    const stream = execStream(cmd);
+
+    if (pipeStdout) stream.stdout.pipe(pipeStdout);
+
+    stream.stdout.on("error", reject);
+    stream.stdout.on("end", resolve);
+  });
+
+export const execWithOut = (cmd, lineCb) =>
+  new Promise((resolve, reject) => {
+    const stream = execStream(cmd);
+
+    stream.stdout.on("data", lineCb);
+    stream.stdout.on("error", reject);
+    stream.stdout.on("end", resolve);
+
+    stream.stderr.on("data", lineCb);
+    stream.stderr.on("error", reject);
+  });
+
+/**
+ * @param {string}
+ * @return {Promise<string>}
+ */
+export const execWithString = async (cmd) => {
+  let str = "";
+
+  await execWithOut(cmd, (line) => {
+    str += line;
+  });
+
+  return str;
+};
