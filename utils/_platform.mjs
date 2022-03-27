@@ -27,7 +27,11 @@
  * SOFTWARE.
  */
 
-import { platformTools } from "./_const.mjs";
+export const platformTools = {
+  win32: "https://dl.google.com/android/repository/platform-tools-latest-windows.zip",
+  linux: "https://dl.google.com/android/repository/platform-tools-latest-linux.zip",
+  darwin: "https://dl.google.com/android/repository/platform-tools-latest-darwin.zip",
+};
 
 let platform = process.platform;
 
@@ -38,7 +42,10 @@ let platform = process.platform;
  * If not, it shows a warning message and defaults to linux.
  */
 if (!Object.keys(platformTools).includes(platform)) {
-  console.warn("You are running on an unsupported OS. You may encounter issues with this script.\n" + "Linux binaries will be used.\n\n");
+  console.warn(
+    "You are running on an unsupported OS. You may encounter issues with this script.\n" +
+      "Linux binaries will be used.\n\n"
+  );
 
   platform = "linux";
 }

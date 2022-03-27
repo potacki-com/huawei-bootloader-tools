@@ -5,3 +5,6 @@ bin
 misc
 
 config.json
+
+saved_state_*.txt
+code_*.txt

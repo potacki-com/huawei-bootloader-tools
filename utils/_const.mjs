@@ -29,18 +29,23 @@
 
 import path from "path";
 import { fileURLToPath } from "url";
+import { platform, win } from "./_platform.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 
 export const __root = path.join(path.dirname(__filename), "..");
 
-export const platformTools = {
-  win32: "https://dl.google.com/android/repository/platform-tools-latest-windows.zip",
-  linux: "https://dl.google.com/android/repository/platform-tools-latest-linux.zip",
-  darwin: "https://dl.google.com/android/repository/platform-tools-latest-darwin.zip",
-};
-
 export const bin = path.join(__root, "bin");
+
+export const adb = path.join(__root, "bin", platform, "platform-tools", win ? "adb.exe" : "adb");
+
+export const fastboot = path.join(
+  __root,
+  "bin",
+  platform,
+  "platform-tools",
+  win ? "fastboot.exe" : "fastboot"
+);
 
 export const adbMessages = {
   oemUnlockSuccess: "success",

@@ -28,18 +28,55 @@
  */
 
 import { readFileSync, writeFileSync } from "fs";
-import { execWithString, exec } from "./utils/_exec.mjs";
-import { adb, fastboot } from "./utils/_binPaths.mjs";
-import { adbMessages } from "./utils/_const.mjs";
-import { CodeNotFoundException, CommandInvalidException, InvalidImeiException, UnknownOutputException } from "./utils/_exceptions.mjs";
-
-const { imei, autorebootAfter, throwOnUnknownErrors, saveStateAfter } = JSON.parse(await readFileSync("config.json", "utf-8"));
+import rl from "readline";
+import { execWithString } from "./utils/_exec.mjs";
+import { adbMessages, adb, fastboot } from "./utils/_const.mjs";
+import {
+  CodeNotFoundException,
+  CommandInvalidException,
+  UnknownOutputException,
+} from "./utils/_exceptions.mjs";
+import {
+  wait,
+  imei,
+  autorebootAfter,
+  throwOnUnknownErrors,
+  saveStateAfter,
+  verboseLog,
+} from "./utils/_misc.mjs";
+import { win } from "./utils/_platform.mjs";
 
 class Bruteforce {
   attempt = 0;
   currentCode = 1000000000000000;
   lastSavedAttempt = 0;
   lastRebootAttempt = 0;
+
+  constructor() {
+    /**
+     * If an exit signal is received, the last code is saved before
+     * exiting the script.
+     */
+
+    // Windows workaround, cause fuck windows, fuck these mfs and their
+    // bigass corporate offices, fucking bigots sitting with their asses shitting
+    // out shit code more smelly than their disgusting armpits.
+    let rline = null;
+    if (win) {
+      rline = rl.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+      });
+    }
+
+    ["SIGINT", "SIGTERM"].forEach((signal) => {
+      if (rline) {
+        console.log("readline fallback for winsmells");
+        rline.on(signal, this.shutdownHandler.bind(this));
+      }
+      process.on(signal, this.shutdownHandler.bind(this));
+    });
+  }
 
   /**
    * Returns a last saved state if available, otherwise null is returned.
@@ -51,6 +88,7 @@ class Bruteforce {
       const content = readFileSync(`saved_state_${imei}.txt`, "utf-8");
       if (!content || content.trim() <= 0) return null;
 
+      verboseLog("getLastSavedState(): found saved state, content:", content);
       return Number(content);
     } catch {
       return null;
@@ -61,6 +99,8 @@ class Bruteforce {
    * Starts the bruteforcing process.
    */
   async start() {
+    verboseLog("start(): called");
+
     this.attempt = 0;
     this.currentCode = this.getLastSavedState() ?? 1000000000000000;
 
@@ -74,17 +114,13 @@ class Bruteforce {
 
     this.currentCode = this.nextCode();
     await this.bruteforce();
+  }
 
-    /**
-     * If an exit signal is received, the last code is saved before
-     * exiting the script.
-     */
-    ["SIGINT", "SIGTERM"].forEach((signal) => {
-      process.on(signal, () => {
-        console.error("Signal received, saving last state.");
-        this.saveLastState(this.currentCode);
-      });
-    });
+  shutdownHandler() {
+    console.info("Signal received, saving last state.");
+
+    this.saveLastState(this.currentCode);
+    process.exit();
   }
 
   /**
@@ -94,7 +130,9 @@ class Bruteforce {
    * @return {Promise<number>}
    */
   async bruteforce() {
-    console.log("Attempting code", this.currentCode);
+    this.attempt++;
+
+    console.log("\nattempt:", this.attempt, "code:", this.currentCode);
     const result = await this.attemptCode(this.currentCode);
 
     /**
@@ -102,7 +140,7 @@ class Bruteforce {
      * It's printed out, saved and returned and the recursion ends.
      */
     if (result) {
-      console.log("Success! The code is: ", result);
+      console.log("Success! The code is:", result);
       this.saveBootloaderCode(this.currentCode);
       return this.currentCode;
     }
@@ -112,8 +150,10 @@ class Bruteforce {
      * This is useful for devices that reboot every 5 attempts as a protection.
      */
     if (autorebootAfter) {
-      if (this.attempt - this.lastRebootAttempt >= autorebootAfter - 1) {
+      if (this.attempt - this.lastRebootAttempt >= autorebootAfter) {
         this.lastRebootAttempt = this.attempt;
+
+        console.log("autoreboot after", autorebootAfter, "attempts");
         await this.rebootDevice();
       }
     }
@@ -149,7 +189,12 @@ class Bruteforce {
 
   // todo: tbd
   nextCode() {
-    return Math.round(Number(String(this.currentCode + Math.sqrt(imei) * 1024).padStart(16, "0")));
+    const nextCode = Math.round(
+      Number(String(this.currentCode + Math.sqrt(imei) * 1024).padStart(16, "0"))
+    );
+    verboseLog("nextCode(): next code is:", nextCode);
+
+    return nextCode;
   }
 
   /**
@@ -161,19 +206,21 @@ class Bruteforce {
    * @return {Promise<boolean>}
    */
   async attemptCode(code) {
-    const adbOutput = (await execWithString(`${adb} oem unlock ${code}`)).toLowerCase().trim();
+    const fastbootOutput = (await execWithString(`${fastboot} oem unlock ${code}`))
+      .toLowerCase()
+      .trim();
 
-    console.log("adb output: ", adbOutput);
+    console.log(fastbootOutput);
 
-    if (adbOutput.includes(adbMessages.commandInvalid)) {
-      throw new CommandInvalidException("adb does not recognize the unlock command.");
+    if (fastbootOutput.includes(adbMessages.commandInvalid)) {
+      throw new CommandInvalidException("fastboot does not recognize the unlock command.");
     }
 
-    if (adbOutput.includes(adbMessages.oemUnlockFail)) {
+    if (fastbootOutput.includes(adbMessages.oemUnlockFail)) {
       return false;
     }
 
-    if (adbOutput.includes(adbMessages.oemUnlockSuccess)) {
+    if (fastbootOutput.includes(adbMessages.oemUnlockSuccess)) {
       return true;
     }
 
@@ -188,11 +235,41 @@ class Bruteforce {
    * Reboots the device into the selected mode.
    * Defaults to bootloader.
    *
-   * @param {string|null} mode
    */
   async rebootDevice() {
-    await exec(`${fastboot} reboot bootloader`);
-    await exec(`${adb} wait-for-device`);
+    await execWithString(
+      `${(await this.fastbootHasDevices()) ? fastboot : adb} reboot bootloader`,
+      process.stdout
+    );
+    await this.fastbootWaitForDevice();
+  }
+
+  async fastbootHasDevices() {
+    const out = await execWithString(`${fastboot} devices`);
+    return out.trim().length >= 1;
+  }
+
+  async fastbootWaitForDevice() {
+    if (!(await this.fastbootHasDevices())) {
+      return await this.fastbootWaitForDevice();
+    }
+
+    verboseLog("fastbootWaitForDevice(): wait finished");
+  }
+
+  async adbWaitForDevice() {
+    const out = (await execWithString(`${adb} wait-for-device`)).trim().toLowerCase();
+
+    if (out.startsWith("error")) {
+      verboseLog("adbWaitForDevice(): error occurred (can be ok):", out);
+      verboseLog("adbWaitForDevice(): waiting for 5 seconds, then attempting again....");
+
+      wait(5000);
+
+      return await this.adbWaitForDevice();
+    }
+
+    verboseLog("adbWaitForDevice(): wait finished");
   }
 
   /**
@@ -202,7 +279,12 @@ class Bruteforce {
    * @param {number} code
    */
   async saveBootloaderCode(code) {
-    writeFileSync(`code_${imei}.txt`, `The bootloader code for the device with IMEI ${imei} is: ${code}`);
+    verboseLog(`saveBootloaderCode(${code}): called, imei: ${imei}`);
+
+    writeFileSync(
+      `code_${imei}.txt`,
+      `The bootloader code for the device with IMEI ${imei} is: ${code}`
+    );
   }
 
   /**
@@ -212,7 +294,9 @@ class Bruteforce {
    * @param {number} code
    */
   async saveLastState(code) {
-    writeFileSync(`saved_state_${imei}.txt`, code);
+    verboseLog(`saveLastState(${code}): called, imei: ${imei}`);
+
+    writeFileSync(`saved_state_${imei}.txt`, String(code));
   }
 }
 
