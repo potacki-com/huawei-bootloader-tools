@@ -30,7 +30,7 @@
 import path from "path";
 import zip from "zip-local";
 import { rmSync } from "fs";
-import { FileDownload } from "./utils/_file-download.mjs";
+import { FileDownload } from "./utils/fileDownload.mjs";
 import { platformTools, bin } from "./utils/_const.mjs";
 import { platform } from "./utils/_platform.mjs";
 
