@@ -1,0 +1,7 @@
+node_modules
+bin
+
+# some local stuff
+misc
+
+config.json

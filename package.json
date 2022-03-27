@@ -1,0 +1,14 @@
+{
+  "name": "huawei-bootloader-tools",
+  "version": "1.0.0",
+  "main": "unlock.mjs",
+  "repository": "git@github.com:VottusCode/huawei-honor-bootloader-bruteforce.git",
+  "author": "Mia <vottus@vott.us>",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "better-exec": "^1.0.0",
+    "node-fetch": "^3.2.3",
+    "zip-local": "^0.3.5"
+  }
+}

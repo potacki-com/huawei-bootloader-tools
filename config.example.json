@@ -1,0 +1,5 @@
+{
+  "imei": "Please enter your device's IMEI.",
+  "autoreboot": true,
+  "autorebootAfterAttempts": 4
+}
