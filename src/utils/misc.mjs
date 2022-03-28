@@ -27,38 +27,29 @@
  * SOFTWARE.
  */
 
+import { readFileSync } from "fs";
 import path from "path";
-import zip from "zip-local";
-import { rmSync } from "fs";
-import { FileDownload } from "./utils/_fileDownload.mjs";
-import { bin } from "./utils/_const.mjs";
-import { platform, platformTools } from "./utils/_platform.mjs";
+import { __root } from "./const.mjs";
 
-const run = async () => {
-  console.log(`downloading binaries for ${platform}...`);
+export const wait = (num) => new Promise((res) => setTimeout(() => res(), num));
 
-  const downloadLink = platformTools[process.platform];
-  const downloadFolder = path.join(bin, platform);
+export const rawArgs = process.argv.slice(2);
 
-  const filePath = path.join(downloadFolder, "tools.zip");
+export const args = rawArgs.filter((arg) => !arg.startsWith("--"));
 
-  /**
-   * Downloads the file to bin/{os}/tools.zip
-   */
-  console.log(`downloading platform tools (${downloadLink})...`);
-  await FileDownload.downloadFile(downloadLink, filePath);
+export const params = rawArgs
+  .filter((arg) => arg.startsWith("--"))
+  .map((param) => param.substring("--".length, param.length));
 
-  /**
-   * Unzips the platform tools.
-   */
-  console.log("unzipping contents...");
-  zip.sync.unzip(filePath).save(downloadFolder);
+export const verbose = params.includes("verbose");
 
-  /**
-   * Deletes the downloaded file.
-   */
-  console.log("cleaning up...");
-  rmSync(filePath);
-};
+export const skipWarning = params.includes("skip-warning");
 
-run();
+export const {
+  imei,
+  autorebootAfter = 4,
+  throwOnUnknownErrors = false,
+  saveStateAfter = 200,
+} = JSON.parse(readFileSync(path.join(__root, "config.json"), "utf-8"));
+
+export const verboseLog = (...args) => verbose && console.log(...args);

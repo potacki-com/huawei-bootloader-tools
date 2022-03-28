@@ -27,34 +27,29 @@
  * SOFTWARE.
  */
 
-import { Bruteforce } from "./src/Bruteforce.mjs";
-import { wait, skipWarning } from "./src/_misc.mjs";
+import path from "path";
+import { fileURLToPath } from "url";
+import { platform, win } from "./platform.mjs";
 
-const run = async () => {
-  if (!skipWarning) {
-    console.log(
-      [
-        "",
-        "This script unlocks your device's bootloader which can be used for rooting,",
-        "flashing custom ROMs, etc.",
-        "",
-        "Authors of this script are not responsible for any kind of damage that may occur",
-        "by using this script - run at your own risk.",
-        "",
-        "Only connect one device at a time, otherwise this script will not work properly.",
-        "",
-        "This script will start in 10 seconds - if you don't want to continue, press Ctrl+C.",
-        "",
-      ].join("\n")
-    );
+const __filename = fileURLToPath(import.meta.url);
 
-    await wait(10000);
-  }
+export const __root = path.join(path.dirname(__filename), "..", "..");
 
-  console.log("Unlock Bootloader - github.com/VottusCode/huawei-honor-bootloader-bruteforce\n");
+export const bin = path.join(__root, "bin");
 
-  const bruteforce = new Bruteforce();
-  await bruteforce.start();
+export const adb = path.join(__root, "bin", platform, "platform-tools", win ? "adb.exe" : "adb");
+
+export const fastboot = path.join(
+  __root,
+  "bin",
+  platform,
+  "platform-tools",
+  win ? "fastboot.exe" : "fastboot"
+);
+
+export const fastbootMessages = {
+  oemSuccess: "success",
+  oemUnlockReboot: "reboot",
+  oemUnlockFail: "check password failed",
+  commandInvalid: "command invalid",
 };
-
-run();

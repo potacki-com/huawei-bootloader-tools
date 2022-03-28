@@ -28,23 +28,20 @@
  */
 
 import { readFileSync, writeFileSync } from "fs";
-import rl from "readline";
-import { execWithString } from "./_exec.mjs";
-import { fastbootMessages, adb, fastboot } from "./_const.mjs";
+import { Fastboot } from "./Fastboot.mjs";
 import {
-  CodeNotFoundException,
-  CommandInvalidException,
-  UnknownOutputException,
-} from "./_exceptions.mjs";
-import {
-  wait,
+  registerShutdownHandler,
+  rebootDevice,
   imei,
   autorebootAfter,
   throwOnUnknownErrors,
   saveStateAfter,
   verboseLog,
-} from "./_misc.mjs";
-import { win } from "./_platform.mjs";
+  CodeNotFoundException,
+  CommandInvalidException,
+  UnknownOutputException,
+  fastbootMessages,
+} from "./utils/index.mjs";
 
 export class Bruteforce {
   attempt = 0;
@@ -53,29 +50,7 @@ export class Bruteforce {
   lastRebootAttempt = 0;
 
   constructor() {
-    /**
-     * If an exit signal is received, the last code is saved before
-     * exiting the script.
-     */
-
-    // Windows workaround, cause fuck windows, fuck these mfs and their
-    // bigass corporate offices, fucking bigots sitting with their asses shitting
-    // out shit code more smelly than their disgusting armpits.
-    let rline = null;
-    if (win) {
-      rline = rl.createInterface({
-        input: process.stdin,
-        output: process.stdout,
-      });
-    }
-
-    ["SIGINT", "SIGTERM"].forEach((signal) => {
-      if (rline) {
-        console.log("readline fallback for winsmells");
-        rline.on(signal, this.shutdownHandler.bind(this));
-      }
-      process.on(signal, this.shutdownHandler.bind(this));
-    });
+    registerShutdownHandler(this.shutdownHandler.bind(this));
   }
 
   /**
@@ -83,7 +58,7 @@ export class Bruteforce {
    *
    * @return {number|null}
    */
-  static getLastSavedState() {
+  getLastSavedState() {
     try {
       const content = readFileSync(`saved_state_${imei}.txt`, "utf-8");
       if (!content || content.trim() <= 0) return null;
@@ -110,14 +85,18 @@ export class Bruteforce {
      * case there were already unlock attempts made (for devices without such
      * protection it's not necessary, but it doesn't take much time).
      */
-    await this.rebootDevice();
+    await rebootDevice("bootloader");
 
     this.currentCode = this.nextCode();
     await this.bruteforce();
   }
 
+  /**
+   * If an exit signal is received, the last code is saved before
+   * exiting the script.
+   */
   shutdownHandler() {
-    console.info("Signal received, saving last state.");
+    console.info("Exit signal received, saving last state.");
 
     this.saveLastState(this.currentCode);
     process.exit();
@@ -154,7 +133,7 @@ export class Bruteforce {
         this.lastRebootAttempt = this.attempt;
 
         console.log("autoreboot after", autorebootAfter, "attempts");
-        await this.rebootDevice();
+        await rebootDevice("bootloader");
       }
     }
 
@@ -206,9 +185,7 @@ export class Bruteforce {
    * @return {Promise<boolean>}
    */
   async attemptCode(code) {
-    const fastbootOutput = (await execWithString(`${fastboot} oem unlock ${code}`))
-      .toLowerCase()
-      .trim();
+    const fastbootOutput = (await Fastboot.command(`oem unlock ${code}`)).toLowerCase().trim();
 
     console.log(fastbootOutput);
 
@@ -229,48 +206,6 @@ export class Bruteforce {
     }
 
     return false;
-  }
-
-  /**
-   * Reboots the device into the selected mode.
-   * Defaults to bootloader.
-   *
-   * @param {string} mode
-   */
-  static async rebootDevice(mode = "bootloader") {
-    await execWithString(
-      `${(await this.fastbootHasDevices()) ? fastboot : adb} reboot ${mode}`.trim(),
-      process.stdout
-    );
-    await this.fastbootWaitForDevice();
-  }
-
-  static async fastbootHasDevices() {
-    const out = await execWithString(`${fastboot} devices`);
-    return out.trim().length >= 1;
-  }
-
-  static async fastbootWaitForDevice() {
-    if (!(await this.fastbootHasDevices())) {
-      return await this.fastbootWaitForDevice();
-    }
-
-    verboseLog("fastbootWaitForDevice(): wait finished");
-  }
-
-  static async adbWaitForDevice() {
-    const out = (await execWithString(`${adb} wait-for-device`)).trim().toLowerCase();
-
-    if (out.startsWith("error")) {
-      verboseLog("adbWaitForDevice(): error occurred (can be ok):", out);
-      verboseLog("adbWaitForDevice(): waiting for 5 seconds, then attempting again....");
-
-      wait(5000);
-
-      return await this.adbWaitForDevice();
-    }
-
-    verboseLog("adbWaitForDevice(): wait finished");
   }
 
   /**

@@ -1,9 +1,7 @@
-import { fileURLToPath } from "url";
-import { Bruteforce } from "./src/Bruteforce.mjs";
-import { args, skipWarning, wait } from "./src/_misc.mjs";
-import { execWithString } from "./src/_exec.mjs";
-import { fastbootMessages, fastboot } from "./src/_const.mjs";
 import path from "path";
+import { fileURLToPath } from "url";
+import { Fastboot } from "../src/Fastboot.mjs";
+import { skipWarning, wait, rebootDevice, args } from "../src/utils/index.mjs";
 
 const scriptName = path.basename(fileURLToPath(import.meta.url));
 
@@ -39,28 +37,23 @@ const run = async () => {
     return;
   }
 
-  // Using methods from the unlock script
-  // to reduce duplicating code.
-  if (!(await Bruteforce.fastbootHasDevices())) {
-    await Bruteforce.rebootDevice();
-  }
+  await rebootDevice("bootloader");
 
-  if ((await execWithString(`${fastboot} getvar unlocked`)).trim().toLowerCase().includes("no")) {
+  if (await Fastboot.isLocked()) {
     console.log(
       `The device is already locked. Are you sure you didn't want to run unlock-bootloader.mjs instead?`
     );
   }
 
-  const output = await execWithString(`${fastboot} oem relock ${oemCode}`);
-
+  const output = await Fastboot.command(`oem relock ${oemCode}`);
   console.log(output);
 
   if (output.trim().toLowerCase().includes(fastbootMessages.oemSuccess)) {
     console.log("The lock was successful.");
-    console.log("fastboot getvar unlocked ->", await execWithString(`${fastboot} getvar unlocked`));
+    console.log("fastboot getvar unlocked ->", await Fastboot.command("getvar unlocked"));
 
     console.log("Rebooting deivce...");
-    await Bruteforce.rebootDevice("");
+    await rebootDevice();
   }
 };
 

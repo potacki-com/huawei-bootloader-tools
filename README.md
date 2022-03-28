@@ -133,7 +133,7 @@ whether if it's in fastboot/bootloader mode or not.
 You can run this script by using this command:
 
 ```shell
-$ node unlock-bootloader.mjs
+$ node scripts/unlock-bootloader.mjs
 ```
 
 It takes a lot of time as the script attempts to bruteforce the code (= attempts lots of combinations). This will take ~~hours~~ days, depends purely on your luck.
@@ -147,7 +147,7 @@ however make sure to back up your data regardless.
 You can run this script by using this command:
 
 ```shell
-$ node lock-bootloader.mjs <oem_code>
+$ node scripts/lock-bootloader.mjs <oem_code>
 ```
 
 This takes usually just few seconds. After that, your device will reboot.
@@ -157,7 +157,7 @@ This takes usually just few seconds. After that, your device will reboot.
 You can run this script by using this command:
 
 ```shell
-$ node download-platform-tools.js
+$ node scripts/download-platform-tools.mjs
 ```
 
 The platform tools are downloaded into the bin/{os}/platform-tools folder.
