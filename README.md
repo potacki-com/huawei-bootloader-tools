@@ -128,12 +128,12 @@ to check `Always allow from this computer`.
 Please make sure that the device is connected already. It doesn't matter
 whether if it's in fastboot/bootloader mode or not.
 
-### Unlock bootloader
+### Bruteforce bootloader
 
 You can run this script by using this command:
 
 ```shell
-$ node scripts/unlock-bootloader.mjs
+$ node scripts/bruteforce-bootloader.mjs
 ```
 
 It takes a lot of time as the script attempts to bruteforce the code (= attempts lots of combinations). This will take ~~hours~~ days, depends purely on your luck.
@@ -148,6 +148,16 @@ You can run this script by using this command:
 
 ```shell
 $ node scripts/lock-bootloader.mjs <oem_code>
+```
+
+This takes usually just few seconds. After that, your device will reboot.
+
+### Unlock bootloader
+
+You can run this script by using this command:
+
+```shell
+$ node scripts/unlock-bootloader.mjs <oem_code>
 ```
 
 This takes usually just few seconds. After that, your device will reboot.

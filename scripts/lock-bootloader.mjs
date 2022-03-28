@@ -1,9 +1,6 @@
-import path from "path";
-import { fileURLToPath } from "url";
+import { Bootloader } from "../src/Bootloader.mjs";
 import { Fastboot } from "../src/Fastboot.mjs";
-import { skipWarning, wait, rebootDevice, args } from "../src/utils/index.mjs";
-
-const scriptName = path.basename(fileURLToPath(import.meta.url));
+import { skipWarning, wait, rebootDevice, oemCode } from "../src/utils/index.mjs";
 
 const run = async () => {
   if (!skipWarning) {
@@ -29,14 +26,6 @@ const run = async () => {
 
   console.log("Lock Bootloader - github.com/VottusCode/huawei-honor-bootloader-bruteforce\n");
 
-  let oemCode = parseInt(args[0]);
-
-  if (!oemCode || oemCode === NaN || String(oemCode).length !== 16) {
-    console.error("Invalid OEM code specified.");
-    console.log(`Correct command usage: node ${scriptName} <oem_code>`);
-    return;
-  }
-
   await rebootDevice("bootloader");
 
   if (await Fastboot.isLocked()) {
@@ -45,16 +34,18 @@ const run = async () => {
     );
   }
 
-  const output = await Fastboot.command(`oem relock ${oemCode}`);
-  console.log(output);
+  const relock = await Bootloader.relock(oemCode);
 
-  if (output.trim().toLowerCase().includes(fastbootMessages.oemSuccess)) {
-    console.log("The lock was successful.");
-    console.log("fastboot getvar unlocked ->", await Fastboot.command("getvar unlocked"));
-
-    console.log("Rebooting deivce...");
-    await rebootDevice();
+  if (!relock) {
+    console.log("The relock process has failed. Please try locking manually.");
+    return;
   }
+
+  console.log("The lock was successful.");
+  console.log("fastboot getvar unlocked ->", await Fastboot.command("getvar unlocked"));
+
+  console.log("Rebooting deivce...");
+  await rebootDevice();
 };
 
 run();

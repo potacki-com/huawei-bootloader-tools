@@ -28,6 +28,7 @@
  */
 
 import { readFileSync, writeFileSync } from "fs";
+import { Bootloader } from "./Bootloader.mjs";
 import { Fastboot } from "./Fastboot.mjs";
 import {
   registerShutdownHandler,
@@ -185,27 +186,7 @@ export class Bruteforce {
    * @return {Promise<boolean>}
    */
   async attemptCode(code) {
-    const fastbootOutput = (await Fastboot.command(`oem unlock ${code}`)).toLowerCase().trim();
-
-    console.log(fastbootOutput);
-
-    if (fastbootOutput.includes(fastbootMessages.commandInvalid)) {
-      throw new CommandInvalidException("fastboot does not recognize the unlock command.");
-    }
-
-    if (fastbootOutput.includes(fastbootMessages.oemUnlockFail)) {
-      return false;
-    }
-
-    if (fastbootOutput.includes(fastbootMessages.oemSuccess)) {
-      return true;
-    }
-
-    if (throwOnUnknownErrors) {
-      throw new UnknownOutputException();
-    }
-
-    return false;
+    return await Bootloader.unlock(code);
   }
 
   /**
