@@ -15,13 +15,7 @@ as well, but you have way smaller chance of succeeding.
 
 ### Tested devices
 
-- Huawei P20 lite (ANE-LX1)
-  - State: In progress
-  - Started at: March 27th 2022, 17:04
-  - Notes:
-    - requires `autorebootAfter` to be set to `4`
-
-Other devices which have been tested with the original Python script:
+Devices which have been tested with the original Python script:
 
 (see: [SkyEmie/huawei-honor-unlock-bootloader#summary](https://github.com/SkyEmie/huawei-honor-unlock-bootloader#summary))
 
@@ -31,6 +25,19 @@ Other devices which have been tested with the original Python script:
 - Huawei P20 lite
 - Huawei Y6 2019
 - Huawei P30
+
+## :warning: For users who came to bruteforce :warning:
+
+There may be other (easier/faster) ways to acquire your device's code.
+
+### (https://github.com/mashed-potatoes/PotatoNV)[PotatoNV]
+
+If your device has a Kirin CPU and you are okay with disassembling the device (usually it's just removing the back of the device and maybe taking off a motherboard shield), you should try PotatoNV first!
+
+PotatoNV utilizes what is called the "software testpoint".
+By shorting it out you boot into a "testpoint" mode which can perform actions like rewriting the unlock code, which is what PotatoNV does.
+
+It took me around 10 minutes (maybe less) to get the unlock code on my P20 lite (granted, it may take bit longer as my device was opened previously).
 
 ## Requirements
 
