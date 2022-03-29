@@ -30,7 +30,9 @@ Devices which have been tested with the original Python script:
 
 There may be other (easier/faster) ways to acquire your device's code.
 
-### (https://github.com/mashed-potatoes/PotatoNV)[PotatoNV]
+### PotatoNV
+
+https://github.com/mashed-potatoes/PotatoNV
 
 If your device has a Kirin CPU and you are okay with disassembling the device (usually it's just removing the back of the device and maybe taking off a motherboard shield), you should try PotatoNV first!
 
