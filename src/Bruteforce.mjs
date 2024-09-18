@@ -29,20 +29,12 @@
 
 import { readFileSync, writeFileSync } from "fs";
 import { Bootloader } from "./Bootloader.mjs";
-import { Fastboot } from "./Fastboot.mjs";
-import {
-  registerShutdownHandler,
-  rebootDevice,
-  imei,
-  autorebootAfter,
-  throwOnUnknownErrors,
-  saveStateAfter,
-  verboseLog,
-  CodeNotFoundException,
-  CommandInvalidException,
-  UnknownOutputException,
-  fastbootMessages,
-} from "./utils/index.mjs";
+import { registerShutdownHandler } from "./utils/registerShutdownHandler.mjs";
+import { rebootDevice } from "./utils/rebootDevice.mjs";
+import { imei } from "./utils/misc.mjs";
+import { autorebootAfter } from "./utils/misc.mjs";
+import { saveStateAfter } from "./utils/misc.mjs";
+import { verboseLog } from "./utils/misc.mjs";
 
 export class Bruteforce {
   attempt = 0;
@@ -161,7 +153,7 @@ export class Bruteforce {
      * were tried and the next one would be too big.
      */
     if (this.currentCode >= 10000000000000000) {
-      throw new CodeNotFoundException("No combination found");
+      throw "Diocan";
     }
 
     return await this.bruteforce();
