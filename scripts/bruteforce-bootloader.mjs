@@ -28,7 +28,7 @@
  */
 
 import { Bruteforce } from "../src/Bruteforce.mjs";
-import { wait, skipWarning } from "../src/utils/index.mjs";
+import { wait, skipWarning } from "../src/utils/misc.mjs";
 
 const run = async () => {
   if (!skipWarning) {

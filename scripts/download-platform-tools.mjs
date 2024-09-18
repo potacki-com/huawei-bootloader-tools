@@ -31,7 +31,8 @@ import path from "path";
 import zip from "zip-local";
 import { rmSync } from "fs";
 import { FileDownload } from "../src/FileDownload.mjs";
-import { bin, platform, platformTools } from "../src/utils/index.mjs";
+import { bin } from "../src/utils/const.mjs";
+import { platform, platformTools } from "../src/utils/index.mjs";
 
 const run = async () => {
   console.log(`downloading binaries for ${platform}...`);
