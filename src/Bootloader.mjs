@@ -1,7 +1,7 @@
 import { writeFileSync } from "fs";
 import { Fastboot } from "./Fastboot.mjs";
 import { fastbootMessages } from "./utils/const.mjs";
-import { imei, logEnable } from "./utils/misc.mjs";
+import { imei, logEnable, throwOnUnknownErrors } from "./utils/misc.mjs";
 
 export class Bootloader {
   /**
