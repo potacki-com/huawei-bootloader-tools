@@ -50,6 +50,7 @@ export const {
   autorebootAfter = 4,
   throwOnUnknownErrors = false,
   saveStateAfter = 200,
+  logEnable=false
 } = JSON.parse(readFileSync(path.join(__root, "config.json"), "utf-8"));
 
 export const verboseLog = (...args) => verbose && console.log(...args);

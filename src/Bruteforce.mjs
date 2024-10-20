@@ -29,13 +29,10 @@
 
 import { readFileSync, writeFileSync } from "fs";
 import { Bootloader } from "./Bootloader.mjs";
-import { registerShutdownHandler } from "./utils/registerShutdownHandler.mjs";
-import { rebootDevice } from "./utils/rebootDevice.mjs";
-import { imei } from "./utils/misc.mjs";
-import { autorebootAfter } from "./utils/misc.mjs";
-import { saveStateAfter } from "./utils/misc.mjs";
-import { verboseLog } from "./utils/misc.mjs";
 
+import { autorebootAfter, imei, logEnable, saveStateAfter, verboseLog } from "./utils/misc.mjs";
+import { rebootDevice } from "./utils/rebootDevice.mjs";
+import { registerShutdownHandler } from "./utils/registerShutdownHandler.mjs";
 export class Bruteforce {
   attempt = 0;
   currentCode = 1000000000000000;
@@ -126,7 +123,11 @@ export class Bruteforce {
         this.lastRebootAttempt = this.attempt;
 
         console.log("autoreboot after", autorebootAfter, "attempts");
+        if (logEnable) {
+          writeFileSync(`log_${imei}.txt`, `\n autoreboot after ${autorebootAfter} attempts \n`, { flag: 'a' });
+        }
         await rebootDevice("bootloader");
+        
       }
     }
 
@@ -153,7 +154,7 @@ export class Bruteforce {
      * were tried and the next one would be too big.
      */
     if (this.currentCode >= 10000000000000000) {
-      throw "Diocan";
+      throw "No combination found";
     }
 
     return await this.bruteforce();

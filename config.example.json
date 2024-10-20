@@ -1,5 +1,8 @@
 {
   "imei": "Please enter your device's IMEI.",
   "autoreboot": true,
-  "autorebootAfterAttempts": 4
+  "autorebootAfter": 4,
+  "throwOnUnknownErrors": false,
+  "saveStateAfter": 200,
+  "logEnable": false
 }

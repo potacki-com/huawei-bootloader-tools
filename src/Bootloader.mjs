@@ -1,3 +1,8 @@
+import { writeFileSync } from "fs";
+import { Fastboot } from "./Fastboot.mjs";
+import { fastbootMessages } from "./utils/const.mjs";
+import { imei, logEnable } from "./utils/misc.mjs";
+
 export class Bootloader {
   /**
    * Send an fastboot oem command
@@ -9,7 +14,9 @@ export class Bootloader {
    */
   static async _sendOemCommand(command) {
     const fastbootOutput = (await Fastboot.command(`oem ${command}`)).toLowerCase().trim();
-
+    if (logEnable) {
+      writeFileSync(`log_${imei}.txt`, `fastboot ${command} :\n ${fastbootOutput} \n`, { flag: 'a' });
+    }
     console.log(fastbootOutput);
 
     if (fastbootOutput.includes(fastbootMessages.commandInvalid)) {
@@ -27,7 +34,6 @@ export class Bootloader {
     if (throwOnUnknownErrors) {
       throw new UnknownOutputException();
     }
-
     return false;
   }
 

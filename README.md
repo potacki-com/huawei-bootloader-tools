@@ -109,7 +109,7 @@ $ npm install
 For using the (un)lock scripts, you must run the `download-platform-tools.mjs` script first.
 
 ```shell
-$ node download-platform-tools.mjs
+$ node ./scripts/download-platform-tools.mjs
 ```
 
 Alternatively, if you're not connected to the internet but have platform tools downloaded, you may
@@ -184,8 +184,6 @@ The platform tools are downloaded into the bin/{os}/platform-tools folder.
 # Credits
 
 [SkyEmie/huawei-honor-unlock-bootloader](https://github.com/SkyEmie/huawei-honor-unlock-bootloader) - The original Python script from which this project has been forked and rewritten.
+[Mintia11/huawei-bootloader-tools](https://github.com/Mintia11/huawei-bootloader-tools) - Fork which was optimized on newest Node.js and added logging to file of processed fastboot commands for compatibility.
 
-<br>
-<hr>
-
-2022 &copy; Mia Lilian Morningstar &ndash; Available under the MIT license, see [LICENSE](LICENSE).
+2022 &copy; [Pawel Potacki](https://potacki.com) &ndash; Available under the MIT license, see [LICENSE](LICENSE).

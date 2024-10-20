@@ -1,5 +1,6 @@
 import { fastboot } from "./utils/const.mjs";
 import { execWithString } from "./utils/exec.mjs";
+import { verboseLog } from "./utils/misc.mjs";
 
 export class Fastboot {
   /**
